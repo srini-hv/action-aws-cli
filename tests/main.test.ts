@@ -1,24 +1,20 @@
-import {getLocalDir} from './util'
-const tempPath =  getLocalDir('temp')
-const cachePath = getLocalDir('tools')
+import { getLocalDir } from "./util"
+const tempPath = getLocalDir("temp")
+const cachePath = getLocalDir("tools")
 
 // @actions/tool-cache plays with these on load - force them for testing
-process.env['RUNNER_TEMP'] = tempPath
-process.env['RUNNER_TOOL_CACHE'] = cachePath
+process.env["RUNNER_TEMP"] = tempPath
+process.env["RUNNER_TOOL_CACHE"] = cachePath
 
-import {rmRF} from '@actions/io'
-import {cacheFile, downloadTool, find} from '@actions/tool-cache'
-import nock from 'nock'
-import {_installTool} from '../src/main'
-import {_filterVersion} from "../src/util"
+import { rmRF } from "@actions/io"
+import { cacheFile, downloadTool, find } from "@actions/tool-cache"
+import nock from "nock"
+import { _installTool } from "../src/main"
+import { _filterVersion } from "../src/util"
 
-function setupTest(): void
-{
+function setupTest(): void {
   beforeAll(function () {
-    nock('http://example.com')
-      .persist()
-      .get('/bytes/35')
-      .reply(200)
+    nock("http://example.com").persist().get("/bytes/35").reply(200)
   })
   beforeEach(async function () {
     await rmRF(cachePath)
@@ -30,7 +26,7 @@ function setupTest(): void
   // })
 }
 
-describe('Test Functions', () => {
+describe("Test Functions", () => {
   setupTest()
   // it('Will give the tool path if already set', async () => {
   //   const downPath: string = await downloadTool(
@@ -42,24 +38,27 @@ describe('Test Functions', () => {
   //   expect(cachedPath).toBe(toolPath)
   // })
 
-  it('Will parse a std(out/err) string and return the version', () => {
-    const msg = 'aws-cli/1.16.220 Python/2.7.10 Darwin/18.2.0 botocore/1.12.210'
-    const expectedVersion = '1.16.220'
-    const msgErr = 'unexpected stdout'
+  it("Will parse a std(out/err) string and return the version", () => {
+    const msg = "aws-cli/1.16.220 Python/2.7.10 Darwin/18.2.0 botocore/1.12.210"
+    const expectedVersion = "1.16.220"
+    const msgErr = "unexpected stdout"
     const returnedVersion = _filterVersion(msg)
     const returnedVersionErr = _filterVersion(msgErr)
     expect(returnedVersion).toEqual(expectedVersion)
-    expect(returnedVersionErr).toEqual('0.0.0')
+    expect(returnedVersionErr).toEqual("0.0.0")
   })
 })
 
-describe('Test End to End', () => {
+describe("Test End to End", () => {
   setupTest()
   const installTimeout = 300000
-  it('Will download, cache and return aws-cli', async () => {
-    jest.setTimeout(installTimeout)
-    const toolPath = await _installTool()
-    expect(toolPath).toContain('aws')
-  }, installTimeout)
-
+  it(
+    "Will download, cache and return aws-cli",
+    async () => {
+      jest.setTimeout(installTimeout)
+      const toolPath = await _installTool()
+      expect(toolPath).toContain("aws")
+    },
+    installTimeout
+  )
 })
